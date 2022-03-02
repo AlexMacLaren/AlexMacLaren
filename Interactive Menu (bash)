@@ -1,0 +1,78 @@
+#!/bin/bash
+
+# Created By: Alex MacLaren
+# OSYS2022: Assignment 3 "Advanced  Scripting"
+# Created on: March 1st, 2022
+# Last change on: March 4th, 2022
+
+# We will first make a variable called "SLEEP" that will be used to cause a 5-second dely throughout the script
+SLEEP=5
+
+# We then create a "while" loop so after a user makes an input, it will be displayed
+# for five seconds before returing to the menu
+
+while [[ "$REPLY" != 5 ]]; do
+    clear
+
+# Now, we will create a list of options that our user can choose from
+# When chosen, an action will run that will display the corrisponding information
+
+echo "Please Select One of the Following Options:"
+
+# using "echo -e" will allow echo to regonice special actions, such as the "\n" line-break
+echo -e "\n"
+
+echo "1) Kernel Information (Name, Release, Version)"
+echo "2) Available Memory on the Server"
+echo "3) Free Storage Space on the Server"
+echo "4) Top 5 Processes on the Server Sorted by Memory Usage"
+echo "5) Exit Script"
+
+# Next, we will create a prompt to recieve input from the user
+# This input will tell the program which information to display!
+
+echo -e "\n"
+
+
+        read -p  "Enter Selection [1-5]> "
+
+echo -e "\n"
+
+# Using the users input, we will create nested "if" statements that will execute a "description" and and "action"
+# If the user input is valid "a number between 1-5" the program will execute - if not, they will recieve an error message
+# Each "if" statement will be displayed for "5" seconds, before returing back to the main menu
+
+    if [[ "$REPLY" =~ ^[1-5]$ ]]; then
+        if [[ "$REPLY" == 1 ]]; then
+            echo "Kernel Information"
+             uname -s -r -v
+            sleep "$SLEEP"
+            continue
+        fi
+        if [[ "$REPLY" == 2 ]]; then
+            echo "Information About Server Memory"
+            free -m
+            sleep "$SLEEP"
+            continue
+        fi
+        if [[ "$REPLY" == 3 ]]; then
+            echo "Information About Storage Space Utilization"
+            df -h
+            sleep "$SLEEP"
+            continue
+        fi
+        if [[ "$REPLY" == 4 ]]; then
+            echo "Top 5 Processes Using Memory"
+            ps aux --sort -rss | head -6
+            sleep "$SLEEP"
+            continue
+        fi
+        if [[ "$REPLY" == 5 ]]; then
+            break
+        fi
+    else
+        echo "Incorrect Input, Try Again"
+        sleep "$SLEEP"
+    fi
+done
+echo "Program Closing..."

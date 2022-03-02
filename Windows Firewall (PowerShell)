@@ -1,0 +1,30 @@
+# WinFirewallX
+# Created by: Alex MacLaren
+# ISEC2022: Assignment 2 – Configuring a Windows Firewall with a Powershell Script
+# Created on: February 16th, 2022
+# Last revised: February 17th, 2022
+
+# The following lines will create variables for each IP we need (with description of corresponding IP)
+# After many errors, I found the IP address MUST be made a string with quotation marks 
+
+$SERVER1="192.168.4.2"
+$TECHSUPPORT1="192.168.4.5"
+$UPDATESERVER="192.168.4.7"
+$MYMACHINE="192.168.208.131"
+# Now, we can simply use these variables in our scripts were the desired IP would go. This should prevent us from making mistakes when entering IP addresses
+
+
+# This line will allow INBOUND traffic via SSH (port 22) from TECHSUPPORT1 to our VM machine
+New-NetFirewallRule -DisplayName techsupportssh -Description "Allows incomming SSH traffic from TECHSUPPORT1" -Enabled True -Direction Inbound -Action Allow -Protocol TCP -Localport 22 -LocalAddress $MYMACHINE -RemoteAddress $TECHSUPPORT1
+
+# This line will allow OUTBOUND traffic via FTP (port 21) from our VM to SERVER1
+New-NetFirewallRule -DisplayName serverftp -Description "Allows outgoing FTP traffic to SERVER1" -Enabled True -Direction Outbound -Action Allow -Protocol TCP -RemotePort 21 -LocalAddress $MYMACHINE -RemoteAddress $SERVER1
+
+# This line will allow INBOUND traffic via FTP (port 21) from UPDATESERVER to our VM
+New-NetFirewallRule -DisplayName updateftp -Description "Allows incomming FTP traffic from UPDATESERVER" -Enabled True -Direction Inbound -Action Allow -Protocol TCP -Localport 21 -LocalAddress $MYMACHINE -RemoteAddress $UPDATESERVER
+
+# This line will apply the following firewall rules to each network profiles: Domain, Private, Public
+Set-NetfirewallProfile -All -Enabled True
+
+# Next, we will enable logging of the three rules we created, and output the log to a file called "allowedconnectionlog" (we'll make it a .txt)
+Set-NetFirewallProfile -NotifyOnListen True -LogAllowed True -LogFileName "C:\Scripts\allowedconnectionlog.txt"

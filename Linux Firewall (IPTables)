@@ -1,0 +1,49 @@
+#!/bin/bash
+
+# SCRIPTNAME: firewallX
+# ASSIGNMENT 1: A Basic IPtables Firewall 
+# AUTHOR: Alex MacLaren
+# CREATION DATE: January 28th, 2022
+# LAST REVISION: January 29th, 2022
+
+### PRE CONFIGURATION ###
+
+# FLUSH CURRENT SETINGS
+sudo iptables -F
+
+# LIST CURRENT DEFAULT SETTINGS IN DESIRED FILE
+sudo iptables -L -v > /home/amaclaren/initialstate.log
+
+# DEFINE VARIABLES FOR USE THROUGHOUT THE SCRIPT
+SERVER1="192.168.4.2"
+TECHSUPPORT1="192.168.4.5"
+UPDATESERVER="192.168.4.7"
+
+# ALLOW ALL TRAFFIC IN AND OUT OF LOOPBACK INTERFACE
+sudo iptables -A INPUT -i lo -j ACCEPT
+sudo iptables -A OUTPUT -o lo -j ACCEPT
+
+# MAKE THE FIREWALL STATEFUL
+sudo iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+sudo iptables -A OUTPUT -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+
+### FIREWALL RULES ### 
+
+# ALLOW INCOMMING SSH TRAFFIC FROM TECHSUPPORT1
+sudo iptables -A INPUT -i eth0 -p tcp -s $TECHSUPPORT1 --dport 22 -j ACCEPT 
+
+# ALLOW OUTGOING FTP TRAFFIC TO SERVER1 AND INCOMMING FTP TRAFFIC FROM UPDATE SERVER
+sudo iptables -A OUTPUT -o eth0 -p tcp -d $SERVER1 --dport 21 -j ACCEPT
+sudo iptables -A INPUT -i eth0 -p tcp -s $UPDATESERVER --dport 21 -j ACCEPT
+
+# SET DEFAULTS: INPUT DROP, OUTPUT ACCEPT, FORWARD DROP
+
+sudo iptables -P INPUT DROP
+sudo iptables -P OUTPUT ACCEPT
+sudo iptables -P FORWARD DROP
+
+# SAVE CURRENT FIREWALL RULES
+sudo iptables-save
+
+# LIST CURRENT SETTINGS IN DESIRED FILE
+sudo iptables -L -v > /home/amaclaren/configuredstate.log

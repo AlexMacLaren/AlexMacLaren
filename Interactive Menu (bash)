@@ -3,7 +3,7 @@
 # Created By: Alex MacLaren
 # OSYS2022: Assignment 3 "Advanced  Scripting"
 # Created on: March 1st, 2022
-# Last change on: March 4th, 2022
+# Last change on: March 2nd, 2022
 
 # We will first make a variable called "SLEEP" that will be used to cause a 5-second dely throughout the script
 SLEEP=5

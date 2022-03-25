@@ -1,78 +1,199 @@
 #!/bin/bash
 
 # Created By: Alex MacLaren
-# OSYS2022: Assignment 3 "Advanced  Scripting"
+# OSYS2022: Assignment 3 "Advanced Scripting"
 # Created on: March 1st, 2022
-# Last change on: March 2nd, 2022
+# Last change on: March 4th, 2022
 
-# We will first make a variable called "SLEEP" that will be used to cause a 5-second dely throughout the script
+
+##################### INTRODUCTION AND PRELIMINARY STEPS ###############################
+
+# First, we will use the "clear" command to clear the terminal "(both looks good and makes it seem like a proper program)"
+clear
+
+# This is an extra step I made to make it seem even MORE like a real program
+echo "Starting Up System Status..."
+sleep 2
+
+# We will first make a variable called "SLEEP" that will be used to cause a 5-second delay throughout the script
 SLEEP=5
 
 # We then create a "while" loop so after a user makes an input, it will be displayed
-# for five seconds before returing to the menu
+# for five seconds before returning to the menu. This "while" loop is the heart of the program, allowing it to run over and over unless exited deliberately 
 
-while [[ "$REPLY" != 5 ]]; do
+
+# This is telling the "while" loop to run its process "UNLESS the user input is == 8"
+while [[ "$REPLY" != 8 ]]; do
     clear
 
 # Now, we will create a list of options that our user can choose from
-# When chosen, an action will run that will display the corrisponding information
+# When chosen, an action will run that will display the corresponding information
 
 echo "Please Select One of the Following Options:"
 
-# using "echo -e" will allow echo to regonice special actions, such as the "\n" line-break
+# using "echo -e" will allow echo to recognize special actions, such as the "\n" line-break
 echo -e "\n"
 
 echo "1) Kernel Information (Name, Release, Version)"
 echo "2) Available Memory on the Server"
 echo "3) Free Storage Space on the Server"
 echo "4) Top 5 Processes on the Server Sorted by Memory Usage"
-echo "5) Exit Script"
+echo "5) Display Network Information"
+echo "6) Test Network Connectivity"
+echo "7) Alter System Services"
+echo "8) Exit Program"
 
-# Next, we will create a prompt to recieve input from the user
+
+# Next, we will create a prompt to receive input from the user
 # This input will tell the program which information to display!
 
 echo -e "\n"
 
-
-        read -p  "Enter Selection [1-5]> "
+# read -p will take the user input and put it into our $REPLY variable!
+        read -p  "Enter Selection [1-8]> "
 
 echo -e "\n"
 
-# Using the users input, we will create nested "if" statements that will execute a "description" and and "action"
-# If the user input is valid "a number between 1-5" the program will execute - if not, they will recieve an error message
-# Each "if" statement will be displayed for "5" seconds, before returing back to the main menu
 
-    if [[ "$REPLY" =~ ^[1-5]$ ]]; then
+############################### IF STATEMENT LOOPS ################################
+
+
+# Taking the users input, we will create nested "if" statements that will execute a "description" and "action"
+# If the user input is valid "a number between 1-8" the program will execute - if not, they will receive an error message
+# Each "if" statement will be displayed for "5-seconds (using the $SLEEP variable we configured", before returning to the main menu
+
+
+# This first "IF" statement checks to see if the user input is a number between 1-8. If it is, the program continues, if not, the user will receive an error message
+    if [[ "$REPLY" =~ ^[1-8]$ ]]; then
+
+# The following "IF" statements are very similar, and i will explain those similarities now:
+# Each "If" statement will check the users input against the corresponding action number
+# If equal, the "IF" statement will execute, displaying an "echo" about the information it’s providing, then running a command to supply that information
+# The information will be displayed for "5-seconds using our $SLEEP variable" before it activates "continue" which will return the user to the main menu
+
+# This "IF" statement displays Kernel information using the "uname -s -r -v" command
         if [[ "$REPLY" == 1 ]]; then
-            echo "Kernel Information"
+            echo "Kernel Information:"
              uname -s -r -v
             sleep "$SLEEP"
             continue
         fi
+
+# This "IF" statement displays information about system memory using the "free -m" command
+
         if [[ "$REPLY" == 2 ]]; then
-            echo "Information About Server Memory"
+            echo "Information About Server Memory:"
             free -m
             sleep "$SLEEP"
             continue
         fi
+
+# This if statement displays storage space information using the "df -h" command
+
         if [[ "$REPLY" == 3 ]]; then
-            echo "Information About Storage Space Utilization"
+            echo "Information About Storage Space Utilization:"
             df -h
             sleep "$SLEEP"
             continue
         fi
+
+# This "IF" statement displays the top five process using memory in descending order using the "ps aux --sort -rss | grep head -6" command
+
         if [[ "$REPLY" == 4 ]]; then
-            echo "Top 5 Processes Using Memory"
+            echo "Top 5 Processes Using Memory:"
             ps aux --sort -rss | head -6
             sleep "$SLEEP"
             continue
         fi
+
+# This "IF" statement displays numerous information about the Network using the “hostname”, “uptime”, and “hostname -I” commands
+
         if [[ "$REPLY" == 5 ]]; then
+           echo "Network Information:"
+           echo -e "\n"
+           echo "Hostname:"
+           hostname
+           echo "Uptime:"
+           uptime
+           echo "IP Address:"
+           hostname -I
+           sleep "$SLEEP"
+           continue
+        fi
+
+# This "IF" statement is unique, as it requires the output of a process to determine what output to display
+# It first does a ping against google (using 2 packets for speed purposes)
+# The output of the ping is sent to /dev/null, so the user never sees what’s happening behind the scenes
+# We then "| grep" a string of data that is displayed during a successful ping, i chose "0% packet loss"
+# Now, we could use an exit code to see if the command ran successfully, using "$? == 0" 
+# If the ping was successful, the string is created and an exit code of 0 is produced, allowing the program to display "Connected"
+# If unsuccessful, an exit code != 0 is produced, and the program displays "Disconnected"
+
+        if [[ "$REPLY" == 6 ]]; then
+        echo "Checking Network Status..."
+        ping -c 2 8.8.8.8 | grep "0% packet loss"  >> /dev/null
+          if [ $? -eq 0 ]; then
+            echo "Connected"
+          else
+            echo "Disconnected"
+          fi
+        sleep "$SLEEP"
+        continue
+        fi
+
+# Another unique "IF" statement. This displays the list of services, then, by using new 'read' and nested 'IF' statements, runs a small program WITHIN the main program
+# Once a user types the service he or she would like to change, a NEW menu is displayed (functioning exactly like the programs main menu) and the user can select what they would like to do
+# It will display the name of the service they chose, and give them three options: start, stop, restart
+# Depending on which option is chosen, a program will run that DOES said action, then displays what action it took
+# Once complete, it will break out and back to the main program
+
+        if [[ "$REPLY" == 7 ]]; then
+            echo "Here Are The Current Services: "
+            systemctl list-units --type=service --all --no-pager
+            echo -e "\n"
+            echo "Please Accurately Type The Service You Want To Alter:"
+            read SERVICE
+            echo -e "\n"
+            echo "Here are the options for $SERVICE:"
+            echo -e "\n"
+            echo "1) Stop The Service"
+            echo "2) Start The Service"
+            echo "3) Restart The Service"
+            echo -e "\n"
+            echo "Enter Selection [1-3]> "
+            read INPUT
+        if [[ "$INPUT" == 1 ]]; then
+                systemctl stop $SERVICE
+                echo "$SERVICE Has Been Stopped"
+
+        elif [[ "$INPUT" == 2 ]]; then
+            systemctl start $SERVICE
+            echo "$SERVICE Has Been Started"
+
+        elif [[ "$INPUT" == 3 ]]; then
+            systemctl restart $SERVICE
+            echo "$SERVICE Has Been Restarted"
+        fi
+        sleep "$SLEEP"
+        continue
+        fi
+
+############################### EXITING THE PROGRAM / ERROR HANDLING #################################
+
+# This "IF" statement is designed to exit the program. As you recall, the initial "$REPLY" is checking to see if the input is "!= 8"
+# Since this input "== 8" this "IF" statement will run - executing the break command and closing the program
+        if [[ "$REPLY" == 8 ]]; then
             break
         fi
+
+# This "ELSE" statement is checking for any input that does not pass the initial input validation earlier in the program
+# If an input is supplied other than "1-8", the program will hit this "ELSE" statement, and execute the error message
     else
         echo "Incorrect Input, Try Again"
         sleep "$SLEEP"
     fi
 done
+
+# The program has successfully been exited by the user - it will now execute the final string 
+
 echo "Program Closing..."

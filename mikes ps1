@@ -1,0 +1,37 @@
+# Created By: Alex MacLaren
+# Class: OSYS 2020 - Windows Security 
+# Created on: 4/11/2022
+
+$adminguest = get-localuser administrator, guest
+$localusers = Get-LocalUser * | Where-Object enabled
+$allusers = get-localuser *
+$PC = hostname
+$portvalue = '3390'
+
+if ($adminguest.enabled -eq $true) {
+    Disable-LocalUser administrator, guest
+}
+
+Get-Localuser -Name Administrator, Guest | Out-File -FilePath C:\temp\HardeningLog.txt
+
+Get-LocalGroupMember Administrators | Out-File -FilePath C:\temp\HardeningLog.txt -Append
+
+if ($localusers.LastLogon -le (Get-Date).adddays(-90)){
+    Disable-LocalUser $localusers | Out-File -FilePath C:\temp\HardeningLog.txt -Append
+}
+else {
+    Add-Content -Path C:\temp\HardeningLog.txt -Value 'No users need to be disabled'
+}
+
+if ($allusers.enabled -eq $false) {
+    Add-Content -Path C:\temp\HardeningLog.txt -Value 'Inactive disabled accounts have been detected'
+}
+
+Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "PortNumber" -Value $portvalue 
+
+New-NetFirewallRule -DisplayName 'RDPPORTLatest-TCP-In' -Profile 'Public' -Direction Inbound -Action Allow -Protocol TCP -LocalPort $portvalue 
+New-NetFirewallRule -DisplayName 'RDPPORTLatest-UDP-In' -Profile 'Public' -Direction Inbound -Action Allow -Protocol UDP -LocalPort $portvalue
+
+$blockedpackets = Set-NetFirewallProfile -Profile Domain,Public,Private -LogBlocked true
+
+$blockedpackets | Out-File -FilePath C:\temp\HardeningLog.txt -Append

@@ -2,36 +2,53 @@
 # Class: OSYS 2020 - Windows Security 
 # Created on: 4/11/2022
 
+# Varible to check to see Admins and Guests
 $adminguest = get-localuser administrator, guest
+# Varible to see all local users that are enabled
 $localusers = Get-LocalUser * | Where-Object enabled
+# Varible to see all local users (enabled and disabled)
 $allusers = get-localuser *
-$PC = hostname
+# Varible to change the default portnumber of RDP
 $portvalue = '3390'
 
+# IF statement to check if Admin/Guest accounts are enabled, if they are it will disable them
 if ($adminguest.enabled -eq $true) {
     Disable-LocalUser administrator, guest
 }
 
+# Output the local admins and guests to a file
 Get-Localuser -Name Administrator, Guest | Out-File -FilePath C:\temp\HardeningLog.txt
 
+# Shows all users and groups in the administrator group and outputs to the same file
 Get-LocalGroupMember Administrators | Out-File -FilePath C:\temp\HardeningLog.txt -Append
 
+# IF statement that checks if any users that are enabled have not logged in for 90 days or more
+# If they havent, it will disable their account
 if ($localusers.LastLogon -le (Get-Date).adddays(-90)){
     Disable-LocalUser $localusers | Out-File -FilePath C:\temp\HardeningLog.txt -Append
 }
+# This will activate if no users need to be disabled
 else {
     Add-Content -Path C:\temp\HardeningLog.txt -Value 'No users need to be disabled'
 }
 
+# This checks if any inactive accounts are enabled, if so, this is reported to the output file
 if ($allusers.enabled -eq $false) {
     Add-Content -Path C:\temp\HardeningLog.txt -Value 'Inactive disabled accounts have been detected'
 }
 
+# This sets the RDP port to a non default 3390
 Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "PortNumber" -Value $portvalue 
 
+# These are changes to the firewall rules that reflect the new RDP port of 3390
 New-NetFirewallRule -DisplayName 'RDPPORTLatest-TCP-In' -Profile 'Public' -Direction Inbound -Action Allow -Protocol TCP -LocalPort $portvalue 
 New-NetFirewallRule -DisplayName 'RDPPORTLatest-UDP-In' -Profile 'Public' -Direction Inbound -Action Allow -Protocol UDP -LocalPort $portvalue
 
-$blockedpackets = Set-NetFirewallProfile -Profile Domain,Public,Private -LogBlocked true
+# This displays that the RDP port has been changed
+Add-Content -Path C:\temp\HardeningLog.txt -Value 'RDP port has been changed to 3390'
 
-$blockedpackets | Out-File -FilePath C:\temp\HardeningLog.txt -Append
+# This enables logging of blocked packets on the three firewall profiles
+Set-NetFirewallProfile -Profile Domain,Public,Private -LogBlocked true
+
+#This displays to the file that the blocked packets are now being logged
+Add-Content -Path C:\temp\HardeningLog.txt -Value 'Blocked packet logging has been enabled on the firewall profiles: Public, Private, Domain'

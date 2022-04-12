@@ -1,0 +1,60 @@
+#! /bin/bash
+
+# this command clears anything currently on the terminal
+clear
+
+# these echo's display the programs name 
+echo "##############################################################"
+echo "########## WELCOME TO GENESIS ENUMERATION TOOL################"
+echo "##############################################################"
+
+# this 'while' loop is the heart of the program and is what allows it to run continuously
+# bringing the user back to this menu until he or she delibrately ends the program
+
+# this tells the program that if the user inputs anything BUT 5, to run the program
+while [[ "$REPLY" != 5 ]]; do
+    clear
+
+# these echos tell the user the options avilable to them
+echo "Choose One Of The Following Options:"
+echo -e "\n"
+echo "1) Input Target IP(s)"
+echo "2) NMAP Scans"
+echo "3) Dirsearch/Nikto"
+echo "4) SQLMap"
+echo "5) Exit"
+
+# this '-e' command tells echo to recogonize special charactors, like the \n line break
+echo -e "\n"
+
+    read -p "Enter Selection [1-5]: "
+
+# We will now use 'IF' statements to run different commands depending on the users choice
+
+# These options - NMAP for example, will have multiple options nested within it 
+# Therefor there will be nested WHILE loops in each of the IF statements
+
+# NMAP will offer a menu
+# 1) Confirm/Change Target IP(s)
+# 2) Select Scan Type (a few common options and a custom option) (this will be a while loop menu as well)
+# 3) Target Ports
+# 4) SCAN
+# 5) Back to main menu
+
+# it will then display the results and remain until the user presses Y to return to NMAP or back to return to the main menu
+# If port 80 or 443 is open, NMAP will suggest moving to Dirsearch or Nikto
+
+# Dirsearch will have:
+# Target Website"
+# SCAN
+
+# The user will also be reccomended to perform an SQLMap scan if port 80 or 443 is open
+# The user will enter the target site and get confirmation
+# 1) Enter/Confirm Target Website
+# 2) SCAN
+# 3) Back To Menu
+
+### EXTRAS ###
+
+# Besides allowing for multiple IPs in one scan, i want each aspect of the program to communicate with one another
+# for instance, if NMAP detects port 80 or 443 is open, it will automatically prompt the user to enter the Dirsearch/Nikto aspects of the script

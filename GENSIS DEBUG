@@ -1,0 +1,161 @@
+#!/bin/bash
+
+# this command clears anything currently on the terminal
+clear
+
+# these echo's display the programs name 
+
+# this 'while' loop is the heart of the program and is what allows it to run continuously
+# bringing the user back to this menu until he or she delibrately ends the program
+
+# this tells the program that if the user inputs anything BUT 5, to run the program
+while [[ "$REPLY" != 4 ]]; do
+
+echo "#########################################################"
+echo "########## WELCOME TO GENESIS ENUMERATION TOOL ##########"
+echo "#########################################################"
+
+echo -e "\n"
+echo -e "\n"
+
+# these echos tell the user the options avilable to them
+echo "Choose One Of The Following Options:"
+echo -e "\n"
+echo "1) Input Target IP(s)"
+echo "2) NMAP Scans"
+echo "3) Nikto Web Scan"
+echo "4) Exit"
+
+# this '-e' command tells echo to recogonize special charactors, like the \n line break
+echo -e "\n"
+
+    read -r -p "Enter Selection [1-4]: "
+
+# We will now use 'IF' statements to run different commands depending on the users choice
+
+  if [[ "$REPLY" =~ ^[1-4]$ ]]; then
+
+CONFIRMIP=X
+PORTS=X
+SCAN=X
+NIKTO=X
+
+        if [[ $REPLY == 1 ]]; then
+        read -r -p IP "Enter Target IP: "
+        echo "You Have Entered $IP, Is This Correct?"
+        read -r -p PROMPT "Y for Yes, N for No:> "
+            if [[ $PROMPT == "Y" ]]; then
+                CONFIRMIP=$IP
+                echo "Okay, Your Target Is $CONFIRMIP"
+                continue
+                else
+                continue
+        fi
+        fi
+
+        if [[ $REPLY == 2 ]]; then
+            while [[ $REPLY != 5 ]]; do
+
+            echo "Welcome To NMAP Scanning, Please Select One of The Following Options"
+            echo -e "\n"
+            echo "1) Confirm Target IP"
+            echo "2) Select Target Ports"
+            echo "3) Select Scan Type"
+            echo "4) SCAN"
+            echo "5) Back to Main Menu"
+            echo -e "\n"
+            read -r -p "Enter Selection [1-5]: "
+
+                if [[ $REPLY == 1 ]]; then
+                echo "Your Target IP Is: $CONFIRMIP"
+                sleep 3
+                continue
+
+                elif [[ $REPLY == 2 ]]; then
+                echo "Which Ports Would You Like To Scan?"
+                read -r -p PORTS "Example: 100, 1-1000, or 'A' for all"
+
+                    if [[ $PORTS == A ]]; then
+                    PORTS='-'
+                    echo "Okay, Scanning Port(s) $PORTS"
+                    continue
+                    else
+                    echo "Okay, Scanning Port(s) $PORTS"
+                    continue
+                    fi
+
+                elif [[ $REPLY == 3 ]]; then
+                echo "Please Enter Scan Type"
+                echo -e "\n"
+                echo "Examples: sC (script), sV (version), O (OS Fingerpint)"
+                read -r -p SCANINPUT ":> "
+                SCAN=SCANINPUT
+                echo "Okay, We'll Do A $SCAN Scan"
+                continue
+                
+
+                elif [[ $REPLY == 4 ]]; then
+                echo "Your Target is $CONFIRMIP, Target Ports Are $PORTS, And Were doing a $SCAN Scan""
+                echo -e "n\"
+                sudo NMAP -"$SCAN" "$CONFIRMIP" -p"$PORTS" | grep -E '(80/tcp | 443/tcp)' 
+                    if [[ $? -eq 0 ]]; then
+                    echo "NMAP Has Detected A Web Server Running On The Target, We Reccomend Performing A Nikto Scan"
+                    echo -e "\n"
+                    read -r -p "Ready To Go Back? Y/N "
+                        if [[ $REPLY == Y ]];then
+                        continue
+                        fi
+                fi
+                fi
+                if [[ $REPLY == 5 ]]; then
+                    break
+                fi
+            done
+            fi
+
+        if [[ $REPLY == 3 ]]; then
+            while [[ $REPLY != 4 ]]; do
+
+            echo "Please Choose One of the Following"
+            echo -e "\n"
+            echo "1) Scan the Current Target ( $CONFIRMIP )"
+            echo "2) Choose A New target"
+            echo "3) Perform Nikto Scan"
+            echo "4) Back To Menu"
+            echo -e "\n"
+            read -r -p TARGET "Enter Selection: "
+
+                if [[ $TARGET == 1 ]]; then
+                NIKTO=$CONFIRMIP
+                continue
+                else
+                continue
+
+                if [[ $TARGET == 2 ]]; then
+                echo "Please Enter a New Target IP - Example: 172.16.157.12"
+                read -r -p NEWNIKTO "Enter Selection: "
+                NIKTO=$NEWNIKTO
+                continue
+           
+                elif [[ $TARGET == 3 ]]; then
+                sudo Nikto -h "$NIKTO"
+                echo -e "\n"
+                echo "Heres What We Found..."
+                echo -e "\n"
+                read -r -p "Press Y When You Are Ready To Go Back"
+                    if [[ $REPLY == Y ]]; then
+                    continue
+                    else
+                    continue
+                    fi
+                fi
+                fi
+                
+                done
+                fi
+        
+        if [[ $REPLY == 4 ]]; then
+                break
+        fi
+        fi
+done
